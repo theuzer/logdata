@@ -19,6 +19,10 @@ app.listen(port, (err) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('working');
+});
+
 // test
 
 const processResponse = (response) => {

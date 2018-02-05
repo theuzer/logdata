@@ -18,6 +18,7 @@ exports.handleApiError = (error) => {
     }
   } else {
     errorMessage = error;
+    //  errorController.createError(999, JSON.stringify(error));
   }
 
   console.log(errorMessage);

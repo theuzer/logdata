@@ -34,9 +34,13 @@ if (process.env.HEROKU_TIMER_CREATE === 'TRUE') {
   }, parseInt(process.env.HEROKU_APP_TIMER, 10));
 }
 
+const keySet1 = [process.env.KEY_0, process.env.KEY_1, process.env.KEY_2, process.env.KEY_3, process.env.KEY_4];
+const keySet2 = [process.env.KEY_5, process.env.KEY_6, process.env.KEY_7, process.env.KEY_8, process.env.KEY_9];
+
 ontime({
   cycle: ['0'],
 }, (ot) => {
-  logic.getGameData();
+  logic.getGameData(-1, keySet1);
+  logic.getGameData(-2, keySet2);
   ot.done();
 });

@@ -33,14 +33,15 @@ const insertGameQueryBuilder = (game) => {
 };
 
 // TODO Bulk insert
+// TODO Error handling: Duplicates why? Connection down try again?
 const createGameAzure = (game) => {
   const query = insertGameQueryBuilder(game);
 
   new sql.Request().query(query)
     .then(() => {
     })
-    .catch((err) => {
-      console.log(`save error on gameId: ${game.gameId}`);
+    .catch(() => {
+      console.log(`save error on gameId: ${game.gameId}, ${game.gameDay}`);
     });
 };
 

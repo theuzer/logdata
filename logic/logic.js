@@ -43,19 +43,19 @@ const processResponse = (startDateString, response) => {
   });
 };
 
-const buildApiCallInfo = (startDateString, endDateString, i) => {
+const buildApiCallInfo = (startDateString, endDateString, keySet, i) => {
   const url = apiUtils.getUrl(startDateString, endDateString, i);
-  const apiConfig = apiUtils.getConfig(i);
+  const apiConfig = apiUtils.getConfig(keySet, i);
   return { url, apiConfig };
 };
 
-const callApi = (startDateString, endDateString, i) => {
-  const apiCallInfo = buildApiCallInfo(startDateString, endDateString, i);
+const callApi = (startDateString, endDateString, keySet, i) => {
+  const apiCallInfo = buildApiCallInfo(startDateString, endDateString, keySet, i);
 
   axios.get(apiCallInfo.url, apiCallInfo.apiConfig)
     .then((response) => {
       console.log(`success on call api: ${i} ${apiCallInfo.url}`);
-      callApi(startDateString, endDateString, i + 1);
+      callApi(startDateString, endDateString, keySet, i + 1);
       processResponse(startDateString, response);
     })
     .catch((err) => {
@@ -63,12 +63,12 @@ const callApi = (startDateString, endDateString, i) => {
     });
 };
 
-exports.getGameData = () => {
+exports.getGameData = (daysLess, keySet) => {
   // startDate is now minus 1 day, endDate is startDate plus 1 minute.
-  const startDate = moment().add(-1, 'd');
-  const endDate = moment().add(-1, 'd').add(1, 'm');
+  const startDate = moment().add(daysLess, 'd');
+  const endDate = moment().add(daysLess, 'd').add(1, 'm');
   const startDateString = dateUtils.getDateString(startDate);
   const endDateString = dateUtils.getDateString(endDate);
   console.log(startDateString, endDateString);
-  callApi(startDateString, endDateString, 0);
+  callApi(startDateString, endDateString, keySet, 0);
 };

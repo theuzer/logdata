@@ -19,7 +19,7 @@ module.exports = {
   },
   azure: {
     insert: {
-      block1: "INSERT INTO Game (GameId, DateCreated, Mode, Patch, MapId, Type, ServerType, RankedType, Stats) VALUES ('",
+      block1: "INSERT INTO Game (GameId, LogDate, GameDateCreated, Mode, Patch, MapId, Type, ServerType, RankedType, Stats) VALUES ('",
       comma: "','",
       block2: "');",
     },

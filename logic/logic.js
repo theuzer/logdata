@@ -75,20 +75,38 @@ const handleApiError = (error) => {
   return errorMessage;
 };
 
-
-const mapGame = (game, included) => {
-  const date = game.attributes.createdAt.split('T');
+const getIndividualDateFields = (dateString) => {
+  const date = dateString.split('T');
   const date1 = date[0].split('-');
   const date2 = date[1].slice(0, -1).split(':');
-  const asset = included.find(x => x.id === game.relationships.assets.data[0].id);
   return {
-    gameId: game.id,
     year: Number(date1[0]),
     month: Number(date1[1]),
     day: Number(date1[2]),
     hour: Number(date2[0]),
     minute: Number(date2[1]),
     second: Number(date2[2]),
+  };
+};
+
+const mapGame = (startDateString, game, included) => {
+  const gameDate = getIndividualDateFields(game.attributes.createdAt);
+  const logDate = getIndividualDateFields(startDateString);
+  const asset = included.find(x => x.id === game.relationships.assets.data[0].id);
+  return {
+    gameId: game.id,
+    gameYear: gameDate.year,
+    gameMonth: gameDate.month,
+    gameDay: gameDate.day,
+    gameHour: gameDate.hour,
+    gameMinute: gameDate.minute,
+    gameSecond: gameDate.second,
+    logYear: logDate.year,
+    logMonth: logDate.month,
+    logDay: logDate.day,
+    logHour: logDate.hour,
+    logMinute: logDate.minute,
+    logSecond: logDate.second,
     duration: game.attributes.duration,
     mode: game.attributes.gameMode,
     patch: game.attributes.patchVersion,
@@ -100,7 +118,7 @@ const mapGame = (game, included) => {
   };
 };
 
-const processResponse = (response) => {
+const processResponse = (startDateString, response) => {
   response.data.data.forEach((game) => {
     const gameOut = mapGame(game, response.data.included);
     //gameController.createGameMongo(gameOut);
@@ -115,7 +133,7 @@ const callApi = (startDateString, endDateString, i) => {
     .then((response) => {
       console.log(`success: ${i}`);
       callApi(startDateString, endDateString, i + 1);
-      processResponse(response);
+      processResponse(startDateString, response);
     })
     .catch((err) => {
       handleApiError(err);

@@ -54,7 +54,7 @@ const callApi = (startDateString, endDateString, i) => {
 
   axios.get(apiCallInfo.url, apiCallInfo.apiConfig)
     .then((response) => {
-      console.log(`success: ${i}`);
+      console.log(`success on call api: ${i} ${apiCallInfo.url}`);
       callApi(startDateString, endDateString, i + 1);
       processResponse(startDateString, response);
     })

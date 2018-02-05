@@ -1,3 +1,5 @@
+const sql = require('mssql');
+
 const Game = require('../models/game');
 const constants = require('./constants');
 const utils = require('./utils');
@@ -34,7 +36,12 @@ const insertGameQueryBuilder = (game) => {
 const createGameAzure = (game) => {
   const query = insertGameQueryBuilder(game);
 
-  utils.doQuery(query);
+  new sql.Request().query(query)
+    .then(() => {
+    })
+    .catch((err) => {
+      console.log(`save error on gameId: ${game.gameId}`);
+    });
 };
 
 exports.createGame = (game) => {

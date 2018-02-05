@@ -1,16 +1,9 @@
-const sql = require('mssql');
-
 const Error = require('../models/error');
-const constants = require('../logic/constants');
+const constants = require('./constants');
+const utils = require('./utils');
 
-//
-// AZURE SQL DATABASE HELP FUNCTIONS
-//
-const insertErrorQueryBuilder = statusCode => [constants.azure.insertError, statusCode, constants.azure.endBlock_Int].join("");
-
-const insertErrorMoreInfoQueryBuilder = (statusCode, info) => [constants.azure.insertErrorMoreInfo, statusCode, ",'", info, constants.azure.endBlock_String].join("");
-
-exports.createErrorMongo = (statusCode) => {
+// Mongo DB
+const createErrorMongo = (statusCode) => {
   const newError = new Error();
   newError.status_code = statusCode;
 
@@ -21,7 +14,12 @@ exports.createErrorMongo = (statusCode) => {
   });
 };
 
-exports.createErrorAzure = (statusCode, info) => {
+// Azure DB
+const insertErrorQueryBuilder = statusCode => [constants.azure.insertError, statusCode, constants.azure.endBlock_Int].join("");
+
+const insertErrorMoreInfoQueryBuilder = (statusCode, info) => [constants.azure.insertErrorMoreInfo, statusCode, ",'", info, constants.azure.endBlock_String].join("");
+
+const createErrorAzure = (statusCode, info) => {
   let query;
   if (info !== null) {
     query = insertErrorMoreInfoQueryBuilder(statusCode, info);
@@ -29,10 +27,13 @@ exports.createErrorAzure = (statusCode, info) => {
     query = insertErrorQueryBuilder(statusCode);
   }
 
-  new sql.Request().query(query)
-    .then(() => {
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  utils.doQuery(query);
+};
+
+exports.createError = (statusCode, info) => {
+  if (process.env.IS_AZURE_DB) {
+    createErrorAzure(statusCode, info);
+  } else {
+    createErrorMongo(statusCode);
+  }
 };

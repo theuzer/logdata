@@ -1,104 +1,14 @@
 const moment = require('moment');
 const axios = require('axios');
 
-const constants = require('./constants');
+const errorHandling = require('./errorHandling');
 const gameController = require('../controllers/gameController');
-const errorController = require('../controllers/errorController');
-
-const format = (number) => {
-  if (number.toString().length === 1) {
-    return `0${number.toString()}`;
-  }
-  return number;
-};
-
-const getUrl = (startDateString, endDateString, i) => {
-  let url = `${constants.api.url.base}?${constants.api.url.start}${startDateString}&${constants.api.url.end}${endDateString}`;
-  if (i !== 0) {
-    const offset = i * 5;
-    url = `${url}&${constants.api.url.page}${offset}`;
-  }
-  return url;
-};
-
-const getConfig = (i) => {
-  let key;
-  switch (i % 5) {
-    case 0:
-      key = process.env.KEY_0;
-      break;
-    case 1:
-      key = process.env.KEY_1;
-      break;
-    case 2:
-      key = process.env.KEY_2;
-      break;
-    case 3:
-      key = process.env.KEY_3;
-      break;
-    case 4:
-      key = process.env.KEY_4;
-      break;
-    default:
-      key = process.env.KEY_0;
-  }
-
-  return {
-    headers: {
-      Authorization: key,
-      Accept: constants.api.accept,
-    },
-  };
-};
-
-const getDateString = m => `${m.year()}-${format(m.month() + 1)}-${format(m.date())}T${format(m.hour())}:${format(m.minute())}:00Z`;
-
-const buildApiCallInfo = (startDateString, endDateString, i) => {
-  const url = getUrl(startDateString, endDateString, i);
-  const apiConfig = getConfig(i);
-  return { url, apiConfig };
-};
-
-const handleApiError = (error) => {
-  let errorMessage;
-  if (typeof error.response !== 'undefined' && typeof error.response.status !== 'undefined') {
-    if (error.response.status === constants.api.errors.noResults.code) {
-      errorMessage = `error: ${error.response.status}, ${error.response.data.errors[0].title}, ${error.response.data.errors[0].detail}`;
-      if (error.response.data.errors[0].detail !== constants.api.errors.noResults.message) {
-        errorController.createErrorAzure(error.response.status, null);
-      }
-    } else if (error.response.status === constants.api.errors.noCall.code) {
-      errorMessage = `error: ${error.response.status}, ${constants.api.errors.noCall.message}`;
-      errorController.createErrorAzure(error.response.status, null);
-    } else {
-      errorMessage = `error: ${error.response.status}`;
-      errorController.createErrorAzure(error.response.status, null);
-    }
-  } else {
-    errorMessage = error;
-  }
-
-  console.log(errorMessage);
-  return errorMessage;
-};
-
-const getIndividualDateFields = (dateString) => {
-  const date = dateString.split('T');
-  const date1 = date[0].split('-');
-  const date2 = date[1].slice(0, -1).split(':');
-  return {
-    year: Number(date1[0]),
-    month: Number(date1[1]),
-    day: Number(date1[2]),
-    hour: Number(date2[0]),
-    minute: Number(date2[1]),
-    second: Number(date2[2]),
-  };
-};
+const dateUtils = require('./utils_date');
+const apiUtils = require('./utils_api');
 
 const mapGame = (startDateString, game, included) => {
-  const gameDate = getIndividualDateFields(game.attributes.createdAt);
-  const logDate = getIndividualDateFields(startDateString);
+  const gameDate = dateUtils.getIndividualDateFields(game.attributes.createdAt);
+  const logDate = dateUtils.getIndividualDateFields(startDateString);
   const asset = included.find(x => x.id === game.relationships.assets.data[0].id);
   return {
     gameId: game.id,
@@ -128,9 +38,15 @@ const mapGame = (startDateString, game, included) => {
 const processResponse = (startDateString, response) => {
   response.data.data.forEach((game) => {
     const gameOut = mapGame(startDateString, game, response.data.included);
-    //gameController.createGameMongo(gameOut);
-    gameController.createGameAzure(gameOut);
+    //  gameController.createGameMongo(gameOut);
+    gameController.createGame(gameOut);
   });
+};
+
+const buildApiCallInfo = (startDateString, endDateString, i) => {
+  const url = apiUtils.getUrl(startDateString, endDateString, i);
+  const apiConfig = apiUtils.getConfig(i);
+  return { url, apiConfig };
 };
 
 const callApi = (startDateString, endDateString, i) => {
@@ -143,7 +59,7 @@ const callApi = (startDateString, endDateString, i) => {
       processResponse(startDateString, response);
     })
     .catch((err) => {
-      handleApiError(err);
+      errorHandling.handleApiError(err);
     });
 };
 
@@ -151,8 +67,8 @@ exports.getGameData = () => {
   // startDate is now minus 1 day, endDate is startDate plus 1 minute.
   const startDate = moment().add(-1, 'd');
   const endDate = moment().add(-1, 'd').add(1, 'm');
-  const startDateString = getDateString(startDate);
-  const endDateString = getDateString(endDate);
+  const startDateString = dateUtils.getDateString(startDate);
+  const endDateString = dateUtils.getDateString(endDate);
   console.log(startDateString, endDateString);
   callApi(startDateString, endDateString, 0);
 };

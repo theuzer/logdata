@@ -120,7 +120,7 @@ const mapGame = (startDateString, game, included) => {
 
 const processResponse = (startDateString, response) => {
   response.data.data.forEach((game) => {
-    const gameOut = mapGame(game, response.data.included);
+    const gameOut = mapGame(startDateString, game, response.data.included);
     //gameController.createGameMongo(gameOut);
     gameController.createGameAzure(gameOut);
   });

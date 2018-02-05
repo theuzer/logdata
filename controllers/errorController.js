@@ -31,7 +31,6 @@ exports.createErrorAzure = (statusCode, info) => {
 
   new sql.Request().query(query)
     .then(() => {
-      console.log('good');
     })
     .catch((err) => {
       console.log(err);

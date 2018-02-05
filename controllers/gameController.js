@@ -39,9 +39,8 @@ exports.createGameAzure = (game) => {
 
   new sql.Request().query(query)
     .then(() => {
-      //console.log('good');
     })
     .catch((err) => {
-      console.log('bad');
+      console.log(err);
     });
 };

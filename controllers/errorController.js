@@ -31,7 +31,7 @@ const createErrorAzure = (statusCode, info) => {
 };
 
 exports.createError = (statusCode, info) => {
-  if (process.env.IS_AZURE_DB) {
+  if (process.env.IS_AZURE_DB === "TRUE") {
     createErrorAzure(statusCode, info);
   } else {
     createErrorMongo(statusCode);

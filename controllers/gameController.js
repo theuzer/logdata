@@ -38,7 +38,7 @@ const createGameAzure = (game) => {
 };
 
 exports.createGame = (game) => {
-  if (process.env.IS_AZURE_DB) {
+  if (process.env.IS_AZURE_DB === "TRUE") {
     createGameAzure(game);
   } else {
     createGameMongo(game);

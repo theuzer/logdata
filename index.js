@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 if (process.env.HEROKU_TIMER_CREATE === 'TRUE') {
   setInterval(() => {
     https.get(process.env.HEROKU_APP_URL);
-    console.log('a');
+    console.log('Pinged application');
   }, parseInt(process.env.HEROKU_APP_TIMER, 10));
 }
 

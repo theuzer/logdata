@@ -23,7 +23,7 @@ const getUrl = (startDateString, endDateString, i) => {
 
 const getConfig = (i) => {
   let key;
-  switch (i % 4) {
+  switch (i % 5) {
     case 0:
       key = process.env.KEY_0;
       break;
@@ -35,6 +35,9 @@ const getConfig = (i) => {
       break;
     case 3:
       key = process.env.KEY_3;
+      break;
+    case 4:
+      key = process.env.KEY_4;
       break;
     default:
       key = process.env.KEY_0;
@@ -61,11 +64,15 @@ const handleApiError = (error) => {
   if (typeof error.response !== 'undefined' && typeof error.response.status !== 'undefined') {
     if (error.response.status === constants.api.errors.noResults.code) {
       errorMessage = `error: ${error.response.status}, ${error.response.data.errors[0].title}, ${error.response.data.errors[0].detail}`;
+      if (error.response.data.errors[0].detail !== constants.api.errors.noResults.message) {
+        errorController.createErrorAzure(error.response.status, null);
+      }
     } else if (error.response.status === constants.api.errors.noCall.code) {
       errorMessage = `error: ${error.response.status}, ${constants.api.errors.noCall.message}`;
-      errorController.createError(error.response.status);
+      errorController.createErrorAzure(error.response.status, null);
     } else {
       errorMessage = `error: ${error.response.status}`;
+      errorController.createErrorAzure(error.response.status, null);
     }
   } else {
     errorMessage = error;

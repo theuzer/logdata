@@ -2,16 +2,15 @@ const sql = require('mssql');
 
 const Game = require('../models/game');
 const constants = require('../logic/constants');
+const utils = require('./utils');
 
 //
 // AZURE SQL DATABASE HELP FUNCTIONS
 //
-const dateBuilder = (year, month, day, hour, minute, second) => `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-
 const insertGameQueryBuilder = (game) => {
-  const gameDate = dateBuilder(game.gameYear, game.gameMonth, game.gameDay, game.gameHour, game.gameMinute, game.gameSecond);
-  const logDate = dateBuilder(game.logYear, game.logMonth, game.logDay, game.logHour, game.logMinute, game.logSecond);
-  return [constants.azure.insert.block1, game.gameId, constants.azure.insert.comma, logDate, constants.azure.insert.comma, gameDate, constants.azure.insert.comma, game.mode, constants.azure.insert.comma, game.patch, constants.azure.insert.comma, game.map, constants.azure.insert.comma, game.type, constants.azure.insert.comma, game.serverType, constants.azure.insert.comma, game.rankedType, constants.azure.insert.comma, game.stats, constants.azure.insert.block2].join("");
+  const gameDate = utils.azureDateBuilder(game.gameYear, game.gameMonth, game.gameDay, game.gameHour, game.gameMinute, game.gameSecond);
+  const logDate = utils.azureDateBuilder(game.logYear, game.logMonth, game.logDay, game.logHour, game.logMinute, game.logSecond);
+  return [constants.azure.insertGame, game.gameId, constants.azure.comma, logDate, constants.azure.comma, gameDate, constants.azure.comma, game.mode, constants.azure.comma, game.patch, constants.azure.comma, game.map, constants.azure.comma, game.type, constants.azure.comma, game.serverType, constants.azure.comma, game.rankedType, constants.azure.comma, game.stats, constants.azure.endBlock_String].join("");
 };
 
 exports.createGameMongo = (game) => {
@@ -39,8 +38,8 @@ exports.createGameAzure = (game) => {
   const query = insertGameQueryBuilder(game);
 
   new sql.Request().query(query)
-    .then((result) => {
-      console.log('good');
+    .then(() => {
+      //console.log('good');
     })
     .catch((err) => {
       console.log('bad');

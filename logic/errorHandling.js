@@ -7,18 +7,17 @@ exports.handleApiError = (error) => {
     if (error.response.status === constants.api.errors.noResults.code) {
       errorMessage = `error: ${error.response.status}, ${error.response.data.errors[0].title}, ${error.response.data.errors[0].detail}`;
       if (error.response.data.errors[0].detail !== constants.api.errors.noResults.message) {
-        errorController.createError(error.response.status, null);
+        errorController.createErrorAzure(error.response.status, null);
       }
     } else if (error.response.status === constants.api.errors.noCall.code) {
       errorMessage = `error: ${error.response.status}, ${constants.api.errors.noCall.message}`;
-      errorController.createError(error.response.status, null);
+      errorController.createErrorAzure(error.response.status, null);
     } else {
       errorMessage = `error: ${error.response.status}`;
-      errorController.createError(error.response.status, null);
+      errorController.createErrorAzure(error.response.status, null);
     }
   } else {
     errorMessage = error;
-    //  errorController.createError(999, JSON.stringify(error));
   }
 
   console.log(errorMessage);

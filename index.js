@@ -5,7 +5,7 @@ const ontime = require('ontime');
 const logic = require('./logic/logic');
 
 // initialize Mongo DB connection
-//  require('./database/mongoDb');
+require('./database/mongoDb');
 
 // initalize Azure DB connection
 require('./database/azureDb');

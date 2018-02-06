@@ -3,7 +3,7 @@ const constants = require('./constants');
 const utils = require('./utils');
 
 // Mongo DB
-const createErrorMongo = (statusCode) => {
+exports.createErrorMongo = (statusCode) => {
   const newError = new Error();
   newError.status_code = statusCode;
 
@@ -19,7 +19,7 @@ const insertErrorQueryBuilder = statusCode => [constants.azure.insertError, stat
 
 const insertErrorMoreInfoQueryBuilder = (statusCode, info) => [constants.azure.insertErrorMoreInfo, statusCode, ",'", info, constants.azure.endBlock_String].join("");
 
-const createErrorAzure = (statusCode, info) => {
+exports.createErrorAzure = (statusCode, info) => {
   let query;
   if (info !== null) {
     query = insertErrorMoreInfoQueryBuilder(statusCode, info);
@@ -28,12 +28,4 @@ const createErrorAzure = (statusCode, info) => {
   }
 
   utils.doQuery(query);
-};
-
-exports.createError = (statusCode, info) => {
-  if (process.env.IS_AZURE_DB === "TRUE") {
-    createErrorAzure(statusCode, info);
-  } else {
-    createErrorMongo(statusCode);
-  }
 };

@@ -3,9 +3,10 @@ const sql = require('mssql');
 const Game = require('../models/game');
 const constants = require('./constants');
 const utils = require('./utils');
+const notLoggedGameController = require('./notLoggedGameController');
 
 // Mongo DB
-const createGameMongo = (game) => {
+exports.createGameMongo = (game) => {
   const newGame = new Game();
   newGame.gameId = game.gameId;
   newGame.date = new Date(game.gameYear, game.gameMonth, game.gameDay, game.gameHour, game.gameMinute, game.gameSecond);
@@ -33,22 +34,28 @@ const insertGameQueryBuilder = (game) => {
 };
 
 // TODO Bulk insert
-// TODO Error handling: Duplicates why? Connection down try again?
-const createGameAzure = (game) => {
+exports.createGameAzure = (game) => {
   const query = insertGameQueryBuilder(game);
 
   new sql.Request().query(query)
-    .then(() => {
-    })
-    .catch(() => {
-      console.log(`save error on gameId: ${game.gameId}, ${game.gameDay}`);
+    .catch((err) => {
+      if (err.code === constants.azure.requestErrorCode) {
+        console.log(`error inserting ${game.gameId}`);
+      }
     });
-};
 
-exports.createGame = (game) => {
-  if (process.env.IS_AZURE_DB === "TRUE") {
-    createGameAzure(game);
-  } else {
-    createGameMongo(game);
-  }
+  let numberOfRetries = constants.azure.numberOfRetries;
+
+  sql.on('error', (err) => {
+    if (err.code === constants.azure.timeoutErrorCode) {
+      if (numberOfRetries > 0) {
+        setTimeout(() => {
+          numberOfRetries -= 1;
+          new sql.Request().query(query);
+        }, 30000);
+      } else {
+        notLoggedGameController.createNotLoggedGame(game.gameId);
+      }
+    }
+  });
 };

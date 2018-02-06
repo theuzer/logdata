@@ -4,6 +4,7 @@ const Game = require('../models/game');
 const constants = require('./constants');
 const utils = require('./utils');
 const notLoggedGameController = require('./notLoggedGameController');
+const errorController = require('./errorController');
 
 // Mongo DB
 exports.createGameMongo = (game) => {
@@ -33,26 +34,27 @@ const insertGameQueryBuilder = (game) => {
   return [constants.azure.insertGame, game.gameId, constants.azure.comma, logDate, constants.azure.comma, gameDate, constants.azure.comma, game.mode, constants.azure.comma, game.patch, constants.azure.comma, game.map, constants.azure.comma, game.type, constants.azure.comma, game.serverType, constants.azure.comma, game.rankedType, constants.azure.comma, game.stats, constants.azure.endBlock_String].join("");
 };
 
+const runCreateGameQuery = (query) => {
+  new sql.Request().query(query)
+    .catch(() => {});
+};
+
 // TODO Bulk insert
 exports.createGameAzure = (game) => {
   const query = insertGameQueryBuilder(game);
 
-  new sql.Request().query(query)
-    .catch((err) => {
-      if (err.code === constants.azure.requestErrorCode) {
-        console.log(`error inserting ${game.gameId}`);
-      }
-    });
+  runCreateGameQuery(query, game);
 
   let numberOfRetries = constants.azure.numberOfRetries;
 
   sql.on('error', (err) => {
     if (err.code === constants.azure.timeoutErrorCode) {
       if (numberOfRetries > 0) {
+        errorController.createErrorMongo(`timeout saving ${game.gameId}. attempt ${constants.azure.numberOfRetries - numberOfRetries + 1}`);
         setTimeout(() => {
           numberOfRetries -= 1;
-          new sql.Request().query(query);
-        }, 30000);
+          runCreateGameQuery(query, game);
+        }, 45000);
       } else {
         notLoggedGameController.createNotLoggedGame(game.gameId);
       }

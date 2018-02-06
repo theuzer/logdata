@@ -3,9 +3,9 @@ const constants = require('./constants');
 const utils = require('./utils');
 
 // Mongo DB
-exports.createErrorMongo = (statusCode) => {
+exports.createErrorMongo = (errorMessage) => {
   const newError = new Error();
-  newError.status_code = statusCode;
+  newError.errorMessage = errorMessage;
 
   newError.save((err) => {
     if (err) {

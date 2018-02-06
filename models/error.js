@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const ErrorSchema = new Schema({
   date_created: { type: Date, default: Date.now },
-  status_code: Number,
+  errorMessage: String,
 });
 
 module.exports = mongoose.model('Error', ErrorSchema);

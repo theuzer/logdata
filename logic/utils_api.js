@@ -1,6 +1,6 @@
 const constants = require('./constants');
 
-exports.getUrl = (startDateString, endDateString, i) => {
+const getUrl = (startDateString, endDateString, i) => {
   let url = `${constants.api.url.base}?${constants.api.url.start}${startDateString}&${constants.api.url.end}${endDateString}`;
   if (i !== 0) {
     const offset = i * 5;
@@ -9,9 +9,15 @@ exports.getUrl = (startDateString, endDateString, i) => {
   return url;
 };
 
-exports.getConfig = (keySet, i) => ({
+const getConfig = (keySet, i) => ({
   headers: {
     Authorization: keySet[i % keySet.length],
     Accept: constants.api.accept,
   },
 });
+
+exports.buildApiCallInfo = (startDateString, endDateString, keySet, i) => {
+  const url = getUrl(startDateString, endDateString, i);
+  const apiConfig = getConfig(keySet, i);
+  return { url, apiConfig };
+};

@@ -8,6 +8,8 @@ module.exports = {
     insertErrorMoreInfo: "INSERT INTO Error (StatusCode, Info) VALUES (",
     timeoutErrorCode: "ETIMEOUT",
     requestErrorCode: "EREQUEST",
+    beginTransaction: "BEGIN TRANSACTION \n",
+    commitTransaction: "COMMIT TRANSACTION",
     numberOfRetries: 100,
   },
 };

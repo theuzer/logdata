@@ -5,6 +5,10 @@ const errorHandling = require('./errorHandling');
 const gameController = require('../controllers/gameController');
 const dateUtils = require('./utils_date');
 const apiUtils = require('./utils_api');
+const constants = require('./constants');
+
+const results1 = [];
+const results2 = [];
 
 const mapGame = (startDateString, game, included) => {
   const gameDate = dateUtils.getIndividualDateFields(game.attributes.createdAt);
@@ -35,39 +39,57 @@ const mapGame = (startDateString, game, included) => {
   };
 };
 
-const processResponse = (startDateString, response) => {
-  response.data.data.forEach((game) => {
-    const gameOut = mapGame(startDateString, game, response.data.included);
-    gameController.createGameAzure(gameOut);
-  });
+const processResponse = (startDateString, response, processNumber) => {
+  if (processNumber === 1) {
+    response.data.data.forEach((game) => {
+      const gameOut = mapGame(startDateString, game, response.data.included);
+      results1.push(gameOut);
+      // gameController.createGameAzure(gameOut);
+    });
+  } else {
+    response.data.data.forEach((game) => {
+      const gameOut = mapGame(startDateString, game, response.data.included);
+      results2.push(gameOut);
+      // gameController.createGameAzure(gameOut);
+    });
+  }
 };
 
-const buildApiCallInfo = (startDateString, endDateString, keySet, i) => {
-  const url = apiUtils.getUrl(startDateString, endDateString, i);
-  const apiConfig = apiUtils.getConfig(keySet, i);
-  return { url, apiConfig };
-};
-
-const callApi = (startDateString, endDateString, keySet, i) => {
-  const apiCallInfo = buildApiCallInfo(startDateString, endDateString, keySet, i);
+const callApi = (startDateString, endDateString, keySet, i, processNumber) => {
+  const apiCallInfo = apiUtils.buildApiCallInfo(startDateString, endDateString, keySet, i);
 
   axios.get(apiCallInfo.url, apiCallInfo.apiConfig)
     .then((response) => {
-      // console.log(`success on call api: ${i} ${apiCallInfo.url}`);
-      callApi(startDateString, endDateString, keySet, i + 1);
-      processResponse(startDateString, response);
+      processResponse(startDateString, response, processNumber);
+      console.log(`${startDateString} ${response.data.data.length}`);
+    })
+    .then(() => {
+      callApi(startDateString, endDateString, keySet, i + 1, processNumber);
     })
     .catch((err) => {
-      errorHandling.handleApiError(err);
+      if (err.response.status === constants.api.errors.noResults.code) {
+        console.log(`ended api calls ${startDateString}`);
+        if (processNumber === 1) {
+          console.log(`going to bulk insert ${results1.length} games on process 1`);
+          gameController.bulkCreateGamesAzure(results1);
+          results1.length = 0;
+        } else {
+          console.log(`going to bulk insert ${results2.length} games on process 2`);
+          gameController.bulkCreateGamesAzure(results2);
+          results2.length = 0;
+        }
+      } else {
+        errorHandling.handleApiError(err);
+      }
     });
 };
 
-exports.getGameData = (daysLess, keySet) => {
+exports.getGameData = (daysLess, keySet, processNumber) => {
   // startDate is now minus 1 day, endDate is startDate plus 1 minute.
   const startDate = moment().add(daysLess, 'd');
   const endDate = moment().add(daysLess, 'd').add(1, 'm');
   const startDateString = dateUtils.getDateString(startDate);
   const endDateString = dateUtils.getDateString(endDate);
   console.log(startDateString, endDateString);
-  callApi(startDateString, endDateString, keySet, 0);
+  callApi(startDateString, endDateString, keySet, 0, processNumber);
 };

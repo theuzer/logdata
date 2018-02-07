@@ -50,13 +50,48 @@ exports.createGameAzure = (game) => {
   sql.on('error', (err) => {
     if (err.code === constants.azure.timeoutErrorCode) {
       if (numberOfRetries > 0) {
-        errorController.createErrorMongo(`timeout saving ${game.gameId}. attempt ${constants.azure.numberOfRetries - numberOfRetries + 1}`);
+        errorController.createErrorMongo(`timeout saving ${game.gameId}. attempt ${(constants.azure.numberOfRetries - numberOfRetries) + 1}`);
         setTimeout(() => {
           numberOfRetries -= 1;
           runCreateGameQuery(query, game);
         }, 45000);
       } else {
         notLoggedGameController.createNotLoggedGame(game.gameId);
+      }
+    }
+  });
+};
+
+const runBulkCreateGamesQuery = (query) => {
+  new sql.Request().query(query)
+    .then(() => {
+      console.log('bulk inserted matches');
+    })
+    .catch(() => {});
+};
+
+exports.bulkCreateGamesAzure = (games) => {
+  let query = constants.azure.beginTransaction;
+  games.forEach((game) => {
+    query += insertGameQueryBuilder(game);
+  });
+  query += constants.azure.commitTransaction;
+
+  console.log(`running query to insert ${games.length} games`);
+  runBulkCreateGamesQuery(query);
+
+  let numberOfRetries = constants.azure.numberOfRetries;
+
+  sql.on('error', (err) => {
+    if (err.code === constants.azure.timeoutErrorCode) {
+      if (numberOfRetries > 0) {
+        errorController.createErrorMongo(`timeout saving games. attempt ${(constants.azure.numberOfRetries - numberOfRetries) + 1}`);
+        setTimeout(() => {
+          numberOfRetries -= 1;
+          runBulkCreateGamesQuery(query);
+        }, 45000);
+      } else {
+        notLoggedGameController.createNotLoggedGame(games);
       }
     }
   });

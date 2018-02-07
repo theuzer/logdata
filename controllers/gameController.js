@@ -91,7 +91,7 @@ exports.bulkCreateGamesAzure = (games) => {
           runBulkCreateGamesQuery(query);
         }, 45000);
       } else {
-        notLoggedGameController.createNotLoggedGame(games);
+        notLoggedGameController.createNotLoggedGames(games);
       }
     }
   });

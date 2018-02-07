@@ -7,7 +7,7 @@ const logic = require('./logic/logic');
 // initialize Mongo DB connection
 require('./database/mongoDb');
 
-// initalize Azure DB connection
+// initialize Azure DB connection
 require('./database/azureDb');
 
 const port = process.env.PORT || 5000;

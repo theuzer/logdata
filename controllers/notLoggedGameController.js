@@ -11,3 +11,15 @@ exports.createNotLoggedGame = (gameId) => {
     }
   });
 };
+
+exports.createNotLoggedGames = (games) => {
+  const newNotLoggedGames = [];
+  games.forEach((game) => {
+    newNotLoggedGames.push(game.gameId);
+  });
+
+  NotLoggedGame.insertMany(newNotLoggedGames)
+    .catch((err) => {
+      throw err;
+    });
+};

@@ -1,11 +1,12 @@
-const Error = require('../models/error');
+const LogError = require('../models/error');
 const constants = require('./constants');
 const utils = require('./utils');
 
 // Mongo DB
-exports.createErrorMongo = (errorMessage) => {
-  const newError = new Error();
+exports.createErrorMongo = (errorMessage, attemptToSave) => {
+  const newError = new LogError();
   newError.errorMessage = errorMessage;
+  newError.attemptToSave = attemptToSave;
 
   newError.save((err) => {
     if (err) {

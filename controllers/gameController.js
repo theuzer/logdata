@@ -81,11 +81,15 @@ exports.bulkCreateGamesAzure = (games) => {
   runBulkCreateGamesQuery(query);
 
   let numberOfRetries = constants.azure.numberOfRetries;
+  let attemptToSave;
+  let errorMessage;
 
   sql.on('error', (err) => {
     if (err.code === constants.azure.timeoutErrorCode) {
       if (numberOfRetries > 0) {
-        errorController.createErrorMongo(`timeout saving games. attempt ${(constants.azure.numberOfRetries - numberOfRetries) + 1}`);
+        attemptToSave = (constants.azure.numberOfRetries - numberOfRetries) + 1;
+        errorMessage = `timeout saving games. attempt ${attemptToSave}`;
+        errorController.createErrorMongo(errorMessage, attemptToSave);
         setTimeout(() => {
           numberOfRetries -= 1;
           runBulkCreateGamesQuery(query);

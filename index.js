@@ -40,7 +40,7 @@ const keySet2 = [process.env.KEY_5, process.env.KEY_6, process.env.KEY_7, proces
 ontime({
   cycle: ['0'],
 }, (ot) => {
-  logic.getGameData(-1, keySet1, 1);
-  logic.getGameData(-2, keySet2, 2);
+  logic.getGameData_daysLess(-2, keySet1, 1);
+  logic.getGameData_minutesLess(-30, keySet2, 2);
   ot.done();
 });

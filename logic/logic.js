@@ -3,6 +3,7 @@ const axios = require('axios');
 
 const errorHandling = require('./errorHandling');
 const gameController = require('../controllers/gameController');
+const logController = require('../controllers/logController');
 const dateUtils = require('./utils_date');
 const apiUtils = require('./utils_api');
 const constants = require('./constants');
@@ -84,12 +85,22 @@ const callApi = (startDateString, endDateString, keySet, i, processNumber) => {
     });
 };
 
-exports.getGameData = (daysLess, keySet, processNumber) => {
-  // startDate is now minus 1 day, endDate is startDate plus 1 minute.
+exports.getGameData_daysLess = (daysLess, keySet, processNumber) => {
   const startDate = moment().add(daysLess, 'd');
   const endDate = moment().add(daysLess, 'd').add(1, 'm');
   const startDateString = dateUtils.getDateString(startDate);
   const endDateString = dateUtils.getDateString(endDate);
   console.log(startDateString, endDateString);
+  logController.createLog(`${startDateString} ${endDateString}`);
+  callApi(startDateString, endDateString, keySet, 0, processNumber);
+};
+
+exports.getGameData_minutesLess = (minutesLess, keySet, processNumber) => {
+  const startDate = moment().add(minutesLess, 'm');
+  const endDate = moment().add(minutesLess, 'm').add(1, 'm');
+  const startDateString = dateUtils.getDateString(startDate);
+  const endDateString = dateUtils.getDateString(endDate);
+  console.log(startDateString, endDateString);
+  logController.createLog(`${startDateString} ${endDateString}`);
   callApi(startDateString, endDateString, keySet, 0, processNumber);
 };

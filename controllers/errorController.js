@@ -3,10 +3,11 @@ const constants = require('./constants');
 const utils = require('./utils');
 
 // Mongo DB
-exports.createErrorMongo = (errorMessage, attemptToSave) => {
+exports.createErrorMongo = (errorMessage, attemptToSave, queueLength) => {
   const newError = new LogError();
   newError.errorMessage = errorMessage;
   newError.attemptToSave = attemptToSave;
+  newError.queueLength = queueLength;
 
   newError.save((err) => {
     if (err) {

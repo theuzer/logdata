@@ -101,7 +101,7 @@ exports.bulkCreateGamesAzure = (games) => {
   sql.on('error', (err) => {
     if (err.code === constants.azure.timeoutErrorCode) {
       notInsertedGamesQueue.push(query);
-      errorController.createErrorMongo('new timeout inserting games', 0);
+      errorController.createErrorMongo('new timeout inserting games', 0, notInsertedGamesQueue.length);
     }
   });
 };
